@@ -116,6 +116,30 @@ function App() {
 
 
   console.log(transaction);
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", 'https://explorer-api.devnet.solana.com', true);
+
+  //Send the proper header information along with the request
+  xhr.setRequestHeader("Content-Type", "application/json");
+
+  xhr.onreadystatechange = function() { // Call a function when the state changes.
+    if (xhr.readyState === 4) {
+      console.log(JSON.parse(xhr.response).result.meta.logMessages)
+
+      var logMessages = JSON.parse(xhr.response).result.meta.logMessages
+
+      logMessages.forEach(element => {
+        console.log(element)
+      });
+
+    }
+  }
+
+
+  var postData = {"method":"getConfirmedTransaction","jsonrpc":"2.0","params":["4EZWLMevpqnkiFSqGcDTWZFej2TvP7MZqQbdqjZeLpvcGJZS3JdXkrRx95EiV5z6611atJVpQM4KbB4D5mhiWVEB",{"encoding":"jsonParsed","commitment":"confirmed"}],"id":"1d0868d5-9764-41ae-ba73-a82a288a1178"}
+
+  xhr.send(JSON.stringify(postData));
   
 
 }
