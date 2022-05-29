@@ -4,4 +4,4 @@ cd call_sol
 
 npm i
 
-npm start
+code .
