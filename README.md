@@ -1,1 +1,1 @@
-#Easy Client
+Solana Client Side
