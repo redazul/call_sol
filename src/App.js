@@ -56,6 +56,10 @@ let airDrop = await connection.requestAirdrop(resp.publicKey, 2e9);
 console.log(airDrop)
 
 transaction.feePayer =  new web3.PublicKey(resp.publicKey.toString())
+
+
+console.log(transaction.feePayer)
+
 transaction.lastValidBlockHeight = await connection.getBlockHeight()
 let blockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
 console.log("recentBlockhash: ", blockhash);
