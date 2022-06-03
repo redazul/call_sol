@@ -8,6 +8,7 @@ const BN = require("bn.js");
 const network = "https://api.devnet.solana.com";
 const connection = new web3.Connection(network);
 let transaction = new web3.Transaction();
+console.log(transaction)
 const borsh = require("borsh")
 window.Buffer = window.Buffer || require('buffer').Buffer;
 
@@ -125,25 +126,25 @@ let createIx = web3.SystemProgram.createAccount({
 
 transaction.add(createIx);
 
-// let incrIx = new web3.TransactionInstruction({
-//   keys: [
-//     {
-//       pubkey: new web3.PublicKey(resp.publicKey.toString()),
-//       isSigner: false,
-//       isWritable: true,
-//     }
-//   ],
-//   programId: this.state.programID,
-//   data: buffer,
-// });
-// /*
-//   TransactionInstruction({
-//     keys: Array<AccountMeta>,
-//     programId: PublicKey,
-//     data: Buffer,
-//   });
-// */
-// transaction.add(incrIx);
+let incrIx = new web3.TransactionInstruction({
+  keys: [
+    {
+      pubkey: new web3.PublicKey(resp.publicKey.toString()),
+      isSigner: false,
+      isWritable: true,
+    }
+  ],
+  programId: this.state.programID,
+  data: buffer,
+});
+/*
+  TransactionInstruction({
+    keys: Array<AccountMeta>,
+    programId: PublicKey,
+    data: Buffer,
+  });
+*/
+transaction.add(incrIx);
 
 
 
