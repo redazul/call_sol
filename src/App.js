@@ -148,19 +148,19 @@ transaction.add(createIx);
 
 
 
-transaction = await window.solana.signTransaction(transaction);
+//transaction = await window.solana.signTransaction(transaction);
 
 console.log(connection)
 console.log(transaction)
 
-transaction.signatures[1].signature = counter._keypair.secretKey
-console.log(transaction)
+// transaction.signatures[1].signature = counter._keypair.secretKey
+// console.log(transaction)
 
-// const { signature } = await window.solana.signAndSendTransaction(transaction);
+const { signature } = await window.solana.signAndSendTransaction(transaction);
 // console.log(signature)
 // await connection.confirmTransaction(signature);
 
-const signature = await connection.sendRawTransaction(transaction.serialize());
+//const signature = await connection.sendRawTransaction(transaction.serialize());
 
 
 
