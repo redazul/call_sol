@@ -3,6 +3,7 @@ import BN from "bn.js";
 import "./App.css"
 import useWallet from '@solana/wallet-adapter-react';
 import { transcode } from 'buffer';
+import { serialize, deserialize, deserializeUnchecked,borsh } from "borsh";
 
 window.Buffer = window.Buffer || require('buffer').Buffer;
 
@@ -23,79 +24,6 @@ const {
 class App extends Component {
 
 
-async nodeVersion()
-{
-
-    //phantom flow 
-    const isPhantomInstalled = window.solana && window.solana.isPhantom
-    if(!isPhantomInstalled)
-    {
-      alert("Install Phatom Wallet")
-      window.open("https://phantom.app/", "_blank");
-      return 0
-    }
-  
-  
-    console.log("Here we go")
-  
-    const programId = new PublicKey("JDwyzRvF9MN8ZBXu9cmubQMN16DYNASkkMidUw7sHpdr"); //counter
-    const connection = new Connection("https://api.devnet.solana.com/");
-
-  const resp = await window.solana.connect();
-  console.log(resp)
-  console.log(resp.publicKey.toString())
-
-  const phantomPubKey = new PublicKey(resp.publicKey.toString())
-  let tx = new Transaction();
-
-  const counter = new Keypair();
-  let counterKey = counter.publicKey;
-
-  console.log("Generating new counter address");
-  let createIx = SystemProgram.createAccount({
-    fromPubkey: phantomPubKey,
-    newAccountPubkey: counterKey,
-    /** Amount of lamports to transfer to the created account */
-    lamports: await connection.getMinimumBalanceForRentExemption(8),
-    /** Amount of space in bytes to allocate to the created account */
-    space: 8,
-    /** Public key of the program to assign as the owner of the created account */
-    programId: programId,
-  });
-  
-  tx.add(createIx);
-
-  tx.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
-  tx.feePayer = phantomPubKey
-
-  tx.partialSign(counter)
-
-  const idx = Buffer.from(new Uint8Array([0]));
-
-  let incrIx = new TransactionInstruction({
-    keys: [
-      {
-        pubkey: counterKey,
-        isSigner: false,
-        isWritable: true,
-      }
-    ],
-    programId: programId,
-    data: idx,
-  });
-
-  tx.add(incrIx);
-  const signedTransaction = await window.solana.signTransaction(tx);
-  console.log(tx)
-
-
-
-
-
-;
-  
-
-}
 
 
 //counter program
@@ -142,9 +70,9 @@ async goCall()
     fromPubkey: phantomPubKey,
     newAccountPubkey: counterKey,
     /** Amount of lamports to transfer to the created account */
-    lamports: await connection.getMinimumBalanceForRentExemption(8),
+    lamports: await connection.getMinimumBalanceForRentExemption(16),
     /** Amount of space in bytes to allocate to the created account */
-    space: 8,
+    space: 16,
     /** Public key of the program to assign as the owner of the created account */
     programId: programId,
   });
@@ -165,14 +93,33 @@ async goCall()
     programId: programId,
     data: idx,
   });
-  /*
-    TransactionInstruction({
-      keys: Array<AccountMeta>,
-      programId: PublicKey,
-      data: Buffer,
-    });
-  */
+
+
+  //Constructor
+  function Test (name, age) {
+    this.name = name;
+    this.age = age;
+  }
+
+
+  const value = new Test({ x: 255, y: 20, z: '123', q: [1, 2, 3] });
+  const schema = new Map([[Test, { kind: 'struct', fields: [['x', 'u8'], ['y', 'u64'], ['z', 'string'], ['q', [3]]] }]]);
+  const buffer = borsh.serialize(schema, value);
+
+  let MulIx = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: counterKey,
+        isSigner: false,
+        isWritable: true,
+      }
+    ],
+    programId: programId,
+    data: idx,
+  });
+
   tx.add(incrIx);
+  tx.add(MulIx);
   tx.recentBlockhash = await connection.recentBlockhash
   console.log(tx)
   let blockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
@@ -186,7 +133,9 @@ async goCall()
 
   const { signature } = await window.solana.signAndSendTransaction(tx);
   console.log(signature)
-  await connection.confirmTransaction(signature);
+
+  window.open(`https://explorer.solana.com/tx/${signature}?cluster=devnet`)
+  //await connection.confirmTransaction(signature);
 
   // let data = (await connection.getAccountInfo(counterKey)).data;
   // let count = new BN(data, "le");
