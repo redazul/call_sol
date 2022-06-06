@@ -192,6 +192,36 @@ async goCall()
 
 }
 
+//auth program
+async goCall2()
+{
+
+  //phantom flow 
+  const isPhantomInstalled = window.solana && window.solana.isPhantom
+  if(!isPhantomInstalled)
+  {
+    alert("Install Phatom Wallet")
+    window.open("https://phantom.app/", "_blank");
+    return 0
+  }
+
+
+  console.log("Auth flow")
+
+  const trackerProgramId = new PublicKey("CeAA9rP7xNJZWgrsPp84TSiQr32KGjh5VYvGSuYk7iSt");
+  const counterProgramId = new PublicKey("EnDET6JzFbb9uAaskPmAde6ooYXzsiRM224ZJ7w2Qw6r");
+  const connection = new Connection("https://api.devnet.solana.com/");
+
+  const resp = await window.solana.connect();
+  console.log(resp)
+  console.log(resp.publicKey.toString())
+
+  const phantomPubKey = new PublicKey(resp.publicKey.toString())
+
+
+
+}
+
 
 
 
@@ -201,7 +231,9 @@ async goCall()
   render() {
     return (
       <div style={{marginTop:window.screen.availHeight/3}} className='center'>
-        <button onClick={this.goCall.bind(this)} className='glow'>Send Transaction</button>
+        <button onClick={this.goCall.bind(this)} className='glow'>Send Counter Transaction</button>
+        <div style={{marginTop:40}}></div>
+        <button onClick={this.goCall2.bind(this)} className='glow'>Send Auth Transaction</button>
         {/* <button onClick={this.goCall.bind(this)} className='glow'>Hello World Program</button> */}
       </div>
     );
