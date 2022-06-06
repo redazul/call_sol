@@ -3,7 +3,7 @@ import BN from "bn.js";
 import "./App.css"
 import useWallet from '@solana/wallet-adapter-react';
 import { transcode } from 'buffer';
-import { serialize, deserialize, deserializeUnchecked,borsh } from "borsh";
+import { serialize,deserialize } from "borsh";
 
 window.Buffer = window.Buffer || require('buffer').Buffer;
 
@@ -95,16 +95,61 @@ async goCall()
   });
 
 
-  //Constructor
-  function Test (name, age) {
-    this.name = name;
-    this.age = age;
+  // // Flexible class that takes properties and imbues them
+  // // to the object instance
+  // class Assignable {
+  //   constructor(properties) {
+  //     Object.keys(properties).map((key) => {
+  //       return (this[key] = properties[key]);
+  //     });
+  //   }
+  // }
+
+  // // Our instruction payload vocabulary
+  // class Payload extends Assignable {}
+
+  // // Borsh needs a schema describing the payload
+  // const payloadSchema = new Map([
+  //   [
+  //     Payload,
+  //     {
+  //       kind: "struct",
+  //       fields: [
+  //         ["id", "u8"],
+  //         ["key", "string"],
+  //         ["value", "u8"],
+  //       ],
+  //     },
+  //   ],
+  // ]);
+
+  // // Construct the payload
+  // const mint = new Payload({
+  //   id: 1,
+  //   key: "mul", // 'ts key'
+  //   value: 100, // 'ts first value'
+  // });
+
+  // // Serialize the payload
+  // const mintSerBuf = Buffer.from(serialize(payloadSchema, mint));
+  // // console.log(mintSerBuf)
+
+
+  // console.log(mintSerBuf)
+  // let mintPayloadCopy = deserialize(payloadSchema, Payload, mintSerBuf)
+  // console.log(mintPayloadCopy)
+
+  //////////////// TRYYYYYYYYYYYY 22222222222222
+    function Test (id, data) {
+      this.id = 1;
+      this.data= 100;
   }
 
+  const value = new Test({ id: 1, data: 100});
+  const schema = new Map([[Test, { kind: 'struct', fields: [['id', 'u8'], ['data', 'u64']] }]]);
+  const buffer = serialize(schema, value);
 
-  const value = new Test({ x: 255, y: 20, z: '123', q: [1, 2, 3] });
-  const schema = new Map([[Test, { kind: 'struct', fields: [['x', 'u8'], ['y', 'u64'], ['z', 'string'], ['q', [3]]] }]]);
-  const buffer = borsh.serialize(schema, value);
+  //const buffer = Buffer.from(new Uint8Array([1,100]));
 
   let MulIx = new TransactionInstruction({
     keys: [
@@ -115,7 +160,7 @@ async goCall()
       }
     ],
     programId: programId,
-    data: idx,
+    data: buffer,
   });
 
   tx.add(incrIx);
@@ -131,7 +176,7 @@ async goCall()
 
   console.log(tx)
 
-  const { signature } = await window.solana.signAndSendTransaction(tx);
+  const { signature } = await window.solana.signAndSendTransaction(tx,{skipPreflight:true});
   console.log(signature)
 
   window.open(`https://explorer.solana.com/tx/${signature}?cluster=devnet`)
