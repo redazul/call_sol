@@ -4,6 +4,7 @@ import "./App.css"
 import useWallet from '@solana/wallet-adapter-react';
 import { transcode } from 'buffer';
 import { serialize,deserialize } from "borsh";
+import { createMint,getMint,getOrCreateAssociatedTokenAccount,getAccount,mintTo } from '@solana/spl-token';
 
 window.Buffer = window.Buffer || require('buffer').Buffer;
 
@@ -16,6 +17,7 @@ const {
   TransactionInstruction,
   sendAndConfirmTransaction,
   clusterApiUrl,
+  LAMPORTS_PER_SOL,
 } = require("@solana/web3.js");
 
 
@@ -371,9 +373,91 @@ async goCall2()
 
 }
 
-goCall3()
+async goCall3()
 {
   console.log("Here we go escrow")
+  
+  //phantom flow 
+  const isPhantomInstalled = window.solana && window.solana.isPhantom
+  if(!isPhantomInstalled)
+  {
+    alert("Install Phatom Wallet")
+    window.open("https://phantom.app/", "_blank");
+    return 0
+  }
+
+
+  console.log("Auth flow")
+
+  const escrowProgramId = new PublicKey("DkaMZtDCUFwN2N8wA2WQPvMeZ3HUXzoHAnvmUDNwMUKt");
+
+  console.log("Escrow Program", escrowProgramId.toBase58());
+  const connection = new Connection("https://api.devnet.solana.com/");
+
+  const resp = await window.solana.connect();
+  console.log(resp)
+  console.log(resp.publicKey.toString())
+
+  const phantomPubKey = new PublicKey(resp.publicKey.toString())
+
+  let tx = new Transaction();
+
+  //////////////// TRYYYYYYYYYYYY 22222222222222
+  function Test (id, data) {
+    this.id = 0;
+    this.data= 100;
+}
+
+  const value = new Test({ id: 0, data: 100});
+  const schema = new Map([[Test, { kind: 'struct', fields: [['id', 'u8'], ['data', 'u64']] }]]);
+  const buffer = serialize(schema, value);
+
+  //const buffer = Buffer.from(new Uint8Array([1,100]));
+
+  let initEscrow = new TransactionInstruction({
+    keys: [
+      //fee payer AccountMeta
+      {
+        pubkey: phantomPubKey,
+        isSigner: true,
+        isWritable: true,
+      },
+      //spl token AccountMeta
+      {
+        pubkey: new PublicKey("5TovBfqCKZnW4KdT3yp6UUUjVVCfjbbqPe8PMtJR9A4h"),
+        isSigner: false,
+        isWritable: true,
+      },
+      //spl token program
+      {
+        pubkey: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
+        isSigner: false,
+        isWritable: false,
+      }
+
+      
+
+      
+    ],
+    programId: escrowProgramId,
+    data: buffer,
+  });
+
+  tx.add(initEscrow);
+  let blockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
+  console.log("recentBlockhash: ", blockhash);
+  tx.recentBlockhash = blockhash;
+  tx.feePayer = phantomPubKey;
+
+  
+  const { signature } = await window.solana.signAndSendTransaction(tx,{skipPreflight:true});
+  console.log(signature)
+
+  window.open(`https://explorer.solana.com/tx/${signature}?cluster=devnet`)
+
+
+
+  
 }
 
 
